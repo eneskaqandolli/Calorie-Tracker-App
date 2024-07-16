@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <title>Food Form</title>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Macro Tracker</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+
+    <div class="container mt-5">
+      <!-- Message Display -->
+      {% if messages %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endif %}
+
+      <h4>Calorie Goal</h4>
+      <div class="progress">
+        <div
+          class="progress-bar bg-success"
+          role="progressbar"
+          style="width: {{ progress }}%"
+          aria-valuenow="0"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          {{ progress }}%
+        </div>
+      </div>
+      <br /><br />
+      <h1 class="text-center">Macro Nutrient and Calorie Tracker</h1>
+      <br />
+      <h2>Select Your Favorite Foods</h2>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="foods">Select Foods</label>
+          <select class="form-control" id="foods" name="foods" multiple>
+            {% for food in foods %}
+            <option value="{{ food.name }}">{{ food.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+
+    <div class="container mt-5">
+      <h2>Consumed Foods By You</h2>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Food Item</th>
+            <th>Carbs (g)</th>
+            <th>Protein (g)</th>
+            <th>Fats (g)</th>
+            <th>Calories</th>
+            <th>Remove Item</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for food in consumed_foods %}
+          <tr>
+            <td>{{ food.food_consumed.name }}</td>
+            <td>{{ food.food_consumed.carbs }}</td>
+            <td>{{ food.food_consumed.protein }}</td>
+            <td>{{ food.food_consumed.fats }}</td>
+            <td>{{ food.food_consumed.calories }}</td>
+            <td><a href="{% url 'delete' food.id %}" class="btn btn-danger btn-sm">Delete</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot class="table-success">
+          <tr>
+            <th>Total</th>
+            <th>{{ total_carbs }}</th>
+            <th>{{ total_protein }}</th>
+            <th>{{ total_fats }}</th>
+            <th>{{ total_calories }}</th>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- Chart Section -->
+      <div class="card mt-5">
+        <div class="card-body">
+          <h2 class="card-title text-center">Today's Breakdown</h2>
+          <h3 class="header-bg text-center">Macronutrients Breakdown</h3>
+          <canvas id="myChart" width="400" height="400"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      var ctx = document.getElementById("myChart").getContext("2d");
+      var myChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Carbs", "Protein", "Fats", "Calories"],
+          datasets: [
+            {
+              label: "Macronutrients",
+              data: [{{ total_carbs }}, {{ total_protein }}, {{ total_fats }}, {{ total_calories }}],
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.2)",
+                "rgba(54, 162, 235, 0.2)",
+                "rgba(75, 192, 192, 0.2)",
+                "rgba(255, 159, 64, 0.2)"  // Background color for Calories
+              ],
+              borderColor: [
+                "rgba(255, 99, 132, 1)",
+                "rgba(54, 162, 235, 1)",
+                "rgba(75, 192, 192, 1)",
+                "rgba(255, 159, 64, 1)"  // Border color for Calories
+              ],
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            yAxes: [
+              {
+                ticks: {
+                  beginAtZero: true,
+                },
+              },
+            ],
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
